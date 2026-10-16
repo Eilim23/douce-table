@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BuffetRouteImport } from './routes/buffet'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as PlatsChaudsRouteImport } from './routes/plats-chauds'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuffetRoute = BuffetRouteImport.update({
+  id: '/buffet',
+  path: '/buffet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatsChaudsRoute = PlatsChaudsRouteImport.update({
+  id: '/plats-chauds',
+  path: '/plats-chauds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/buffet': typeof BuffetRoute
+  '/contact': typeof ContactRoute
+  '/plats-chauds': typeof PlatsChaudsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/buffet': typeof BuffetRoute
+  '/contact': typeof ContactRoute
+  '/plats-chauds': typeof PlatsChaudsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/buffet': typeof BuffetRoute
+  '/contact': typeof ContactRoute
+  '/plats-chauds': typeof PlatsChaudsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/buffet' | '/contact' | '/plats-chauds'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/buffet' | '/contact' | '/plats-chauds'
+  id: '__root__' | '/' | '/buffet' | '/contact' | '/plats-chauds'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BuffetRoute: typeof BuffetRoute
+  ContactRoute: typeof ContactRoute
+  PlatsChaudsRoute: typeof PlatsChaudsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buffet': {
+      id: '/buffet'
+      path: '/buffet'
+      fullPath: '/buffet'
+      preLoaderRoute: typeof BuffetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plats-chauds': {
+      id: '/plats-chauds'
+      path: '/plats-chauds'
+      fullPath: '/plats-chauds'
+      preLoaderRoute: typeof PlatsChaudsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BuffetRoute: BuffetRoute,
+  ContactRoute: ContactRoute,
+  PlatsChaudsRoute: PlatsChaudsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
