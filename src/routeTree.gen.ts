@@ -10,8 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BuffetRouteImport } from './routes/buffet'
 import { Route as AvisRouteImport } from './routes/avis'
+import { Route as BuffetRouteImport } from './routes/buffet'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as PlatsChaudsRouteImport } from './routes/plats-chauds'
 
