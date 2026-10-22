@@ -1,7 +1,5 @@
-// Stockage des avis.
-// Pour l'instant les avis sont enregistrés dans le navigateur (localStorage).
-// Pour que TOUS les visiteurs voient les mêmes avis, il faudra remplacer
-// loadReviews / addReview par des appels à une base de données.
+// Avis partagés, enregistrés dans la base de données Lovable Cloud.
+import { supabase } from "@/integrations/supabase/client";
 
 export type Review = {
   id: string;
@@ -11,31 +9,31 @@ export type Review = {
   date: string;
 };
 
-const KEY = "douce-table-avis";
-
-export function loadReviews(): Review[] {
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    const list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
-  } catch {
-    return [];
-  }
+export async function loadReviews(): Promise<Review[]> {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("id, name, rating, message, created_at")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error("Impossible de charger les avis pour le moment.");
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    name: r.name,
+    rating: r.rating,
+    message: r.message,
+    date: r.created_at,
+  }));
 }
 
-export function addReview(input: { name: string; rating: number; message: string }): Review[] {
-  const review: Review = {
-    id: crypto.randomUUID(),
-    name: input.name.slice(0, 50),
+export async function addReview(input: { name: string; rating: number; message: string }): Promise<void> {
+  const { error } = await supabase.from("reviews").insert({
+    name: input.name.trim().slice(0, 50),
     rating: Math.min(5, Math.max(1, Math.round(input.rating))),
-    message: input.message,
-    date: new Date().toISOString(),
-  };
-  const next = [review, ...loadReviews()];
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    // stockage indisponible : l'avis reste visible pour la session en cours
+    message: input.message.trim(),
+  });
+  if (error) {
+    if (error.message.includes("duplicate_review")) throw new Error("Cet avis a déjà été publié.");
+    if (error.message.includes("too_many_reviews"))
+      throw new Error("Beaucoup d'avis viennent d'être envoyés, merci de réessayer dans une minute.");
+    throw new Error("Votre avis n'a pas pu être envoyé, merci de réessayer.");
   }
-  return next;
 }
