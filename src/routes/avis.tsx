@@ -31,29 +31,55 @@ function Stars({ value, size = "h-5 w-5" }: { value: number; size?: string }) {
 
 function Avis() {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [name, setName] = useState("");
   const [rating, setRating] = useState(5);
   const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // piège anti-spam (invisible)
+  const [openedAt] = useState(() => Date.now());
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const refresh = async () => {
+    try {
+      setReviews(await loadReviews());
+      setLoadError("");
+    } catch (e) {
+      setLoadError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setReviews(loadReviews());
+    refresh();
   }, []);
 
-  const submit = (e: React.SyntheticEvent) => {
+  const submit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setSent(false);
     const n = name.trim();
     const m = message.trim();
     if (!n) return setError("Merci d'indiquer votre prénom.");
     if (m.length < 3) return setError("Merci d'écrire un petit commentaire.");
-    setReviews(addReview({ name: n, rating, message: m }));
-    setName("");
-    setMessage("");
-    setRating(5);
-    setError("");
-    setSent(true);
+    if (website) return setSent(true); // robot : on ignore silencieusement
+    if (Date.now() - openedAt < 3000) return setError("Merci de prendre le temps de relire votre avis.");
+    setSending(true);
+    try {
+      await addReview({ name: n, rating, message: m });
+      setName("");
+      setMessage("");
+      setRating(5);
+      setError("");
+      setSent(true);
+      await refresh();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -94,14 +120,22 @@ function Avis() {
             <label htmlFor="avis-message" className="text-sm font-medium">Votre commentaire</label>
             <Textarea id="avis-message" value={message} onChange={(e) => setMessage(e.target.value)} rows={5} className="mt-2 bg-card" />
           </div>
+          <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+            <label htmlFor="avis-site">Ne pas remplir</label>
+            <input id="avis-site" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+          </div>
           {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           {sent && <p className="text-sm text-foreground" role="status">Merci pour votre avis !</p>}
-          <Button type="submit">Publier mon avis</Button>
+          <Button type="submit" disabled={sending}>{sending ? "Envoi…" : "Publier mon avis"}</Button>
         </form>
 
         <div className="mt-16">
           <h2 className="text-3xl">Ils nous ont fait confiance</h2>
-          {reviews.length === 0 ? (
+          {loading ? (
+            <p className="mt-6 text-muted-foreground">Chargement des avis…</p>
+          ) : loadError ? (
+            <p className="mt-6 text-destructive" role="alert">{loadError}</p>
+          ) : reviews.length === 0 ? (
             <p className="mt-6 text-muted-foreground">Aucun avis pour le moment : soyez le premier à en laisser un !</p>
           ) : (
             <ul className="mt-6">
