@@ -220,16 +220,18 @@ export function Lightbox({
             onWheel={onWheel}
             onDoubleClick={onDoubleClick}
           >
-            <img
-              src={photos[index].src}
-              alt={photos[index].alt}
-              draggable={false}
-              className={`max-h-full max-w-full object-contain ${zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"}`}
-              style={{
-                transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
-                transition: drag.current ? "none" : "transform 0.15s ease-out",
-              }}
-            />
+            {photos[index] && (
+              <img
+                src={photos[index].src}
+                alt={photos[index].alt}
+                draggable={false}
+                className={`max-h-full max-w-full object-contain ${zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"}`}
+                style={{
+                  transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                  transition: drag.current ? "none" : "transform 0.15s ease-out",
+                }}
+              />
+            )}
             {photos.length > 1 && (
               <>
             <button
